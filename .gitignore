@@ -4,3 +4,4 @@ lib
 lib64
 *.pyc
 *.swp
+settings.py # let's not accidentally commit our AWS keys
