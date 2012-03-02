@@ -11,6 +11,7 @@ def cache_image(path):
     """
     # get the image from the source URL
     url = '%s%s' % (settings.source_url, path)
+    print 'Starting download: %s' % url
     try:
         image_file = urllib2.urlopen(url)
     except urllib2.HTTPError, e:
@@ -18,6 +19,7 @@ def cache_image(path):
             return '404 NOT FOUND', False, ''
         raise
     image_data = StringIO(image_file.read())
+    print 'Download complete: %s' % url
 
     # connect to S3 and save the resized image to the target bucket
     conn = boto.connect_s3(settings.aws_access_key_id,
@@ -25,8 +27,11 @@ def cache_image(path):
     bucket = conn.get_bucket(settings.target_bucket)
     k = Key(bucket)
     k.key = path
+    print 'Saving to S3: %s' % path
     k.set_contents_from_file(image_data)
-    
+    k.set_acl('public-read')
+    print 'Save to S3 complete: %s' % path
+
     # TODO send proper headers
     headers = [('Content-type', image_file.info()['content-type'])]
     return '200 OK', headers, image_data.getvalue()
